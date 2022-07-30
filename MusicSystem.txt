@@ -1,0 +1,578 @@
+#include <iostream>
+#include <string> //to use string type
+#include <cctype> //to manipulate characters
+#include <iomanip>
+#include <fstream> //to use file stream
+#include <algorithm> //to use transform()
+#include <cstdlib> //to use srand() & rand()
+#include <ctime> //to use system time
+#define maxrow 100 //maximum amount of rows/records in the inputFile.txt (100 in this case)
+using namespace std;
+typedef struct
+{
+string title;
+string album;
+string artist;
+string composer;
+string genre;
+string rdate;
+string path;
+}PLAYLIST;
+void Read_File(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+void Update_File(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+void Write_File_Table(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+void Add_Songs(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+void Delete_Songs(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+void Update_Songs(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+void List(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+void Advanced_Search(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+28
+void Playlist(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[]);
+int main()
+{
+int option;
+string song_title[maxrow], album_song[maxrow], artist_song[maxrow], composer_song[maxrow], genre_song[maxrow], release_date[maxrow], directory_path_song[maxrow]; //how long will an individual string be?unlimited?issue?
+Read_File(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+do {
+/*MAIN MENU*/
+cout << "1-Add Songs" << endl;
+cout << "2-Delete Songs" << endl;
+cout << "3-Update/Edit Songs" << endl;
+cout << "4-List Songs" << endl;
+cout << "5-Advanced Search Songs" << endl;
+cout << "6-Playlist" << endl;
+cout << "7-Exit " << endl;
+cout << "=================================" << endl;
+cout << "Select option: ";
+cin >> option;
+cin.clear();
+cin.ignore(200, '\n');
+system("CLS"); //clear screen to create the look of entering a new page
+switch (option) {
+case 1:
+Add_Songs(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+break;
+case 2:
+Delete_Songs(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+break;
+case 3:
+Update_Songs(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+break;
+case 4:
+List(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+break;
+case 5:
+Advanced_Search(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+break;
+case 6:
+29
+Playlist(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+break;
+case 7:
+break;
+default:
+cout << "Invalid choice!! Please try again\n\n";
+}
+} while (option != 7); //keep this loop running until press exit 7
+return 0;
+}
+void Read_File(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*READING INPUTS FROM inputFile.txt INTO ARRAYS*/
+ifstream inputf("inputFile.txt");
+if (!inputf)
+{
+cout << "Input File Error!\n";
+}
+else
+{
+for (int i = 0;i < maxrow;i++)
+{
+getline(inputf, song_title[i]);
+getline(inputf, album_song[i]);
+getline(inputf, artist_song[i]);
+getline(inputf, composer_song[i]);
+getline(inputf, genre_song[i]);
+getline(inputf, release_date[i]);
+getline(inputf, directory_path_song[i]);
+inputf.ignore(1, '\n'); //to ignore the whitespace between the directory path and the next song_title
+}
+}
+inputf.close();
+return;
+}
+void Update_File(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*UPDATING THE inputFile.txt*/
+ofstream updatef("inputFile.txt", ios::out);
+30
+int i = 0;
+while (song_title[i] != "\0" || album_song[i] != "\0" || artist_song[i] != "\0" || composer_song[i] != "\0" || genre_song[i] != "\0" || release_date[i] != "\0" || directory_path_song[i] != "\0")//runs until detect last row not 100 since that will have lots of space
+{
+if (i > 0)
+{
+updatef << endl << endl;
+}
+updatef << song_title[i] << endl;
+updatef << album_song[i] << endl;
+updatef << artist_song[i] << endl;
+updatef << composer_song[i] << endl;
+updatef << genre_song[i] << endl;
+updatef << release_date[i] << endl;
+updatef << directory_path_song[i];//cursor MUST remains at the position of the last text, not the next line to ensure next line of records can be taken in correctly
+i++;
+}
+updatef.close();
+return;
+}
+void Write_File_Table(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*CREATING outputFile.txt THAT CONTAINS THE FULL RECORDS OF SONG IN TABLE FORM FOR REFERENCE*/
+int i;
+ofstream outputf("outputFile.txt", ios::out);
+outputf << left << setw(50) << "SONG" << setw(70) << "ALBUM" << setw(30) << "ARTIST" << setw(160) << "COMPOSER" << setw(65) << "GENRE" << setw(30) << "RELEASE DATE" << "DIRECTORY PATH\n";
+for (i = 0; i < maxrow;i++)
+{
+outputf << setw(50) << song_title[i];
+outputf << setw(70) << album_song[i];
+outputf << setw(30) << artist_song[i];
+outputf << setw(160) << composer_song[i];
+outputf << setw(65) << genre_song[i];
+outputf << setw(30) << release_date[i];
+outputf << directory_path_song[i] << endl;
+}
+outputf.close();
+return;
+}
+31
+void Add_Songs(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*ADDING SONGS INTO RECORDS/inputFile.txt BY APPENDING THE FILE*/
+string song, album, artist, composer, genre, date, directory_path;
+ofstream addsongsf("inputFile.txt", ios::app); //please ensure that the last position of the cursor in inputFile.txt is right at the end of the last text (not new line!)
+cout << "Enter the song title: ";
+getline(cin, song);
+addsongsf << endl << endl << song << endl;
+cout << "Enter the album name: ";
+getline(cin, album);
+addsongsf << album << endl;
+cout << "Enter the artist name: ";
+getline(cin, artist);
+addsongsf << artist << endl;
+cout << "Enter the the composer name: ";
+getline(cin, composer);
+addsongsf << composer << endl;
+cout << "Enter the song genre: ";
+getline(cin, genre);
+addsongsf << genre << endl;
+cout << "Enter the release date: ";
+getline(cin, date);
+addsongsf << date << endl;
+cout << "Enter the directory path: ";
+getline(cin, directory_path);
+addsongsf << directory_path; //no new line to ensure that the last position of the cursor remains at the same place
+addsongsf.close();
+Read_File(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song); //update the string arrays by reading the newly appended file
+system("CLS");
+cout << "New song inserted successfully!\n\n";
+return;
+}
+32
+void Delete_Songs(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*DELETING RECORD OF SONG FROM inputFile.txt*/
+int j, i = 0, counter = 0;
+string song_name, bufferA, bufferA1;
+cout << "Note: Deleting the song title will delete its record " << endl;
+cout << "Please enter a song title: ";
+getline(cin, song_name);
+while (i < maxrow && counter == 0)
+{
+bufferA = song_title[i];
+bufferA1 = song_name;
+transform(bufferA.begin(), bufferA.end(), bufferA.begin(), ::toupper);
+transform(bufferA1.begin(), bufferA1.end(), bufferA1.begin(), ::toupper);
+if (bufferA == bufferA1) //if array of song title match the input song_title
+{
+counter++; //to indicate that the data want to delete exists
+song_title[i].clear(); //to erase the current string content at position i
+album_song[i].clear();
+artist_song[i].clear();
+composer_song[i].clear();
+genre_song[i].clear();
+release_date[i].clear();
+directory_path_song[i].clear();
+for (j = i;j < maxrow - 1;j++) //no need to update at maxrow 99th since no records will be brought up
+{
+song_title[j] = song_title[j + 1]; //to replace the previous string content with the string content in the next row (therefore, updating the list after deletion)
+album_song[j] = album_song[j + 1];
+composer_song[j] = composer_song[j + 1];
+genre_song[j] = genre_song[j + 1];
+release_date[j] = release_date[j + 1];
+directory_path_song[j] = directory_path_song[j + 1];
+}
+}
+i++;
+}
+system("CLS");
+if (counter == 0) {
+cout << "The song title does not exist!\n\n";
+33
+}
+else {
+cout << "Song Deleted Successfully!\n\n";
+}
+/*UPDATING THE inputFile.txt WITH THE LASTEST VALUE IN THE ARRAYS*/
+Update_File(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+return;
+}
+void Update_Songs(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*UPDATING THE RECORD OF A SONG*/
+string song_name, artist, album;
+string bufferA, bufferA1, bufferB, bufferB1, bufferC, bufferC1;
+cout << "Enter the song title: ";
+getline(cin, song_name);
+cout << "Enter the album name: ";
+getline(cin, album);
+cout << "Enter the artist name: ";
+getline(cin, artist);
+int counter = 0;
+for (int i = 0; i < maxrow; i++)
+{
+if (song_title[i] != "\0" || album_song[i] != "\0" || artist_song[i] != "\0") //if one of the details of current record is not empty, enter the if statement (good for if song_title is empty at first)
+{
+bufferA = song_title[i];
+bufferA1 = song_name;
+transform(bufferA.begin(), bufferA.end(), bufferA.begin(), ::toupper);
+transform(bufferA1.begin(), bufferA1.end(), bufferA1.begin(), ::toupper);
+bufferB = album_song[i];
+bufferB1 = album;
+transform(bufferB.begin(), bufferB.end(), bufferB.begin(), ::toupper);
+transform(bufferB1.begin(), bufferB1.end(), bufferB1.begin(), ::toupper);
+bufferC = artist_song[i];
+bufferC1 = artist;
+transform(bufferC.begin(), bufferC.end(), bufferC.begin(), ::toupper);
+transform(bufferC1.begin(), bufferC1.end(), bufferC1.begin(), ::toupper);
+if (bufferA == bufferA1 && bufferB == bufferB1 && bufferC == bufferC1)
+34
+//if this combination of inputs lockS down to a specific record specific, the record exists, enter this if to update the details
+{
+counter++; //to indicate that the data want to update exists
+char song[20];
+char album[20];
+char artist[20];
+char composer[20];
+char genre[20];
+char date[20];
+char directory_path[20];
+cout << "\n\nEnter the new song_title: ";
+cin.getline(song, 20);
+cout << "Enter the new album name: ";
+cin.getline(album, 20);
+cout << "Enter the new artist name: ";
+cin.getline(artist, 20);
+cout << "Enter the new composer name: ";
+cin.getline(composer, 20);
+cout << "Enter the new song genre: ";
+cin.getline(genre, 20);
+cout << "Enter the new release date: ";
+cin.getline(date, 20);
+cout << "Enter the new directory_path: ";
+cin.getline(directory_path, 20);
+song_title[i] = song;
+album_song[i] = album;
+artist_song[i] = artist;
+composer_song[i] = composer;
+genre_song[i] = genre;
+release_date[i] = date;
+directory_path_song[i] = directory_path;
+/*UPDATING THE inputFile.txt*/
+Update_File(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song);
+35
+break;
+}
+}
+}
+system("CLS");
+if (counter == 0) {
+cout << "Your input does not exist in the records \n\n";
+}
+else {
+cout << "Record successfully edited!\n\n";
+}
+return;
+}
+void List(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*LISTING ALL RECORDS IN THE inputFile.txt*/
+cout << "LISTED RECORDS (Due to insufficient space in C++, for table form, please refer to Outputf.txt) " << endl;
+cout << "======================================================================================================================" << endl;
+int counter = 0;
+for (int i = 0; i < maxrow; i++)
+{
+if (song_title[i] != "\0") {
+++counter;
+cout << left << setw(20) << "SONG TITLE: " << song_title[i] << endl;
+cout << setw(20) << "ALBUM: " << album_song[i] << endl;
+cout << setw(20) << "ARTIST: " << artist_song[i] << endl;
+cout << setw(20) << "COMPOSER: " << composer_song[i] << endl;
+cout << setw(20) << "GENRE: " << genre_song[i] << endl;
+cout << setw(20) << "RELEASE DATE: " << release_date[i] << endl;
+cout << setw(20) << "DIRECTORY PATH: " << directory_path_song[i] << endl << endl;
+cout << "----------------------------------------------------------------------------------------\n";
+}
+}
+Write_File_Table(song_title, album_song, artist_song, composer_song, genre_song, release_date, directory_path_song); //write to output file in table form
+if (counter == 0) {
+cout << "No records exist!" << endl;
+}
+cout << "======================================================================================================================" << endl;
+return;
+}
+36
+void Advanced_Search(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*SEARCHING FOR RELEVANT RECORDS BY SEARCH KEYWORD*/
+/*MENU OF ADVANCED SEARCH*/
+cout << "Do you want to search via song title,artist or album?" << endl;// prompt for type of advanced search
+cout << "Enter 1 to search via song title: " << endl;
+cout << "Enter 2 to search via artist: " << endl;
+cout << "Enter 3 to search via album: " << endl << "Choice: ";
+int counter = 0;
+int choice;
+string bufferA, bufferA1, search;
+cin >> choice;
+cin.clear();
+/*START TO SEARCH*/
+switch (choice)
+{
+case 1:
+cout << "Enter the part of the name of the song: ";
+cin.ignore();
+getline(cin, search);
+cout << "======================================================================================================================" << endl;
+for (int i = 0; i < maxrow; i++)
+{
+/*CHECK FOR EXISTENCE OF RELEVANT RECORDS*/
+bufferA = song_title[i];
+bufferA1 = search;
+transform(bufferA.begin(), bufferA.end(), bufferA.begin(), ::toupper);
+transform(bufferA1.begin(), bufferA1.end(), bufferA1.begin(), ::toupper);
+int pos = bufferA.find(bufferA1);//finds the position of the string
+if (pos >= 0)
+{
+/*DISPLAY THE RECORD FOUND*/
+counter++;
+cout << left << setw(20) << "SONG TITLE: " << song_title[i] << endl;
+cout << setw(20) << "ALBUM: " << album_song[i] << endl;
+cout << setw(20) << "ARTIST: " << artist_song[i] << endl;
+cout << setw(20) << "COMPOSER: " << composer_song[i] << endl;
+cout << setw(20) << "GENRE: " << genre_song[i] << endl;
+37
+cout << setw(20) << "RELEASE DATE: " << release_date[i] << endl;
+cout << setw(20) << "DIRECTORY PATH: " << directory_path_song[i] << endl << endl;
+cout << "----------------------------------------------------------------------------------------\n";
+}
+}
+if (counter == 0)
+{
+cout << "NO MATCHING RESULTS!!\n " << endl;
+}
+break;
+case 2:
+cout << "Enter the part of the name of the artist: ";//for the artist part
+cin.ignore();
+getline(cin, search);
+cout << "======================================================================================================================" << endl;
+for (int i = 0; i < maxrow; i++)
+{
+/*CHECK FOR EXISTENCE OF RELEVANT RECORDS*/
+bufferA = artist_song[i];
+bufferA1 = search;
+transform(bufferA.begin(), bufferA.end(), bufferA.begin(), ::toupper);
+transform(bufferA1.begin(), bufferA1.end(), bufferA1.begin(), ::toupper);
+int pos = bufferA.find(bufferA1);//finds the position of the string
+if (pos >= 0)
+{
+/*DISPLAY THE RECORD FOUND*/
+counter++;
+cout << left << setw(20) << "SONG TITLE: " << song_title[i] << endl;
+cout << setw(20) << "ALBUM: " << album_song[i] << endl;
+cout << setw(20) << "ARTIST: " << artist_song[i] << endl;
+cout << setw(20) << "COMPOSER: " << composer_song[i] << endl;
+cout << setw(20) << "GENRE: " << genre_song[i] << endl;
+cout << setw(20) << "RELEASE DATE: " << release_date[i] << endl;
+cout << setw(20) << "DIRECTORY PATH: " << directory_path_song[i] << endl << endl;
+cout << "----------------------------------------------------------------------------------------\n";
+}
+}
+38
+if (counter == 0)
+{
+cout << "NO MATCHING RESULTS!!\n " << endl;
+}
+break;
+case 3:
+cout << "Enter the part of the name of the album: ";//for the album part
+cin.ignore();
+getline(cin, search); //Key in part of the name of the album
+cout << "======================================================================================================================" << endl;
+for (int i = 0; i < maxrow; i++)
+{
+/*CHECK FOR EXISTENCE OF RELEVANT RECORDS*/
+bufferA = album_song[i];
+bufferA1 = search;
+transform(bufferA.begin(), bufferA.end(), bufferA.begin(), ::toupper);
+transform(bufferA1.begin(), bufferA1.end(), bufferA1.begin(), ::toupper);
+int pos = bufferA.find(bufferA1);//finds the position of the string
+if (pos >= 0)
+{
+/*DISPLAY THE RECORD FOUND*/
+counter++;
+cout << left << setw(20) << "SONG TITLE: " << song_title[i] << endl;
+cout << setw(20) << "ALBUM: " << album_song[i] << endl;
+cout << setw(20) << "ARTIST: " << artist_song[i] << endl;
+cout << setw(20) << "COMPOSER: " << composer_song[i] << endl;
+cout << setw(20) << "GENRE: " << genre_song[i] << endl;
+cout << setw(20) << "RELEASE DATE: " << release_date[i] << endl;
+cout << setw(20) << "DIRECTORY PATH: " << directory_path_song[i] << endl << endl;
+cout << "----------------------------------------------------------------------------------------\n";
+}
+}
+if (counter == 0)
+{
+cout << "NO MATCHING RESULTS!!\n " << endl;//if no matches are found
+}
+break;
+default:
+39
+system("CLS");
+cout << "Invalid choice inserted!\n\n";
+cin.ignore(200, '\n');
+}
+return;
+}
+void Playlist(string song_title[], string album_song[], string artist_song[], string composer_song[], string genre_song[], string release_date[], string directory_path_song[])
+{
+/*CREATING A PLAYLIST CONSISTING OF 10 RANDOM SONGS*/
+int choice, i, rnum, counter = 0,j = 0;
+string bufferA, bufferA1, in_artist, in_genre;
+PLAYLIST list[maxrow];
+/*MENU OF PLAYLIST*/
+cout<<"Do you want to generate a playlist via artist or genre?"<<endl;
+cout << "Enter 1 to generate via artist: \n";
+cout << "Enter 2 to generate via genre: \n";
+cout << "choice: ";
+cin >> choice;
+cin.clear();
+switch (choice)
+{
+case 1:
+cout << "Enter the name of the artist: ";
+cin.ignore();
+getline(cin, in_artist); //Key in an artist's name
+cout << "======================================================================================================================" << endl;
+bufferA1 = in_artist;
+transform(bufferA1.begin(), bufferA1.end(), bufferA1.begin(), ::toupper);
+for (i = 0;i < maxrow;i++)
+{
+/*CHECK FOR EXISTENCE OF RELEVANT RECORDS*/
+bufferA = artist_song[i];
+transform(bufferA.begin(), bufferA.end(), bufferA.begin(), ::toupper);
+int pos = bufferA.find(bufferA1);
+if (pos>=0)
+{
+/*ASSIGNING FOUND RECORDS INTO A NEW ARRAY OF LIST*/
+counter++;
+list[j].title = song_title[i];
+list[j].album = album_song[i];
+40
+list[j].artist = artist_song[i];
+list[j].composer = composer_song[i];
+list[j].genre = genre_song[i];
+list[j].rdate = release_date[i];
+list[j].path = directory_path_song[i];
+j++;
+}
+}
+if (counter == 0)
+{
+cout << "NO MATCHING RESULTS!!\n " << endl;
+}
+else
+{
+/*CREATING A RANDOM PLAYLIST*/
+srand(time(NULL));
+for (i = 0;i < 10;i++)
+{
+rnum = rand() % j;
+cout << left << setw(20) << "SONG TITLE: " << list[rnum].title << endl;
+cout << setw(20) << "ALBUM: " << list[rnum].album << endl;
+cout << setw(20) << "ARTIST: " << list[rnum].artist << endl;
+cout << setw(20) << "COMPOSER: " << list[rnum].composer << endl;
+cout << setw(20) << "GENRE: " << list[rnum].genre << endl;
+cout << setw(20) << "RELEASE DATE: " << list[rnum].rdate << endl;
+cout << setw(20) << "DIRECTORY PATH: " << list[rnum].path << endl << endl;
+cout << "----------------------------------------------------------------------------------------\n";
+}
+}
+break;
+case 2:
+cout << "Enter the name of the genre: ";
+cin.ignore();
+getline(cin, in_genre); //Key in a genre name
+cout << "======================================================================================================================" << endl;
+bufferA1 = in_genre;
+transform(bufferA1.begin(), bufferA1.end(), bufferA1.begin(), ::toupper);
+for (i = 0;i < maxrow;i++)
+{
+/*CHECK FOR EXISTENCE OF RELEVANT RECORDS*/
+41
+bufferA = genre_song[i];
+transform(bufferA.begin(), bufferA.end(), bufferA.begin(), ::toupper);
+int pos = bufferA.find(bufferA1);
+if (pos >= 0)
+{
+/*ASSIGNING FOUND RECORDS INTO A NEW ARRAY OF LIST*/
+counter++;
+list[j].title = song_title[i];
+list[j].album = album_song[i];
+list[j].artist = artist_song[i];
+list[j].composer = composer_song[i];
+list[j].genre = genre_song[i];
+list[j].rdate = release_date[i];
+list[j].path = directory_path_song[i];
+j++;
+}
+}
+if (counter == 0)
+{
+cout << "NO MATCHING RESULTS!!\n " << endl;
+}
+else
+{
+/*CREATING A RANDOM PLAYLIST*/
+srand(time(NULL));
+for (i = 0;i < 10;i++)
+{
+rnum = rand() % j;
+cout << left << setw(20) << "SONG TITLE: " << list[rnum].title << endl;
+cout << setw(20) << "ALBUM: " << list[rnum].album << endl;
+cout << setw(20) << "ARTIST: " << list[rnum].artist << endl;
+cout << setw(20) << "COMPOSER: " << list[rnum].composer << endl;
+cout << setw(20) << "GENRE: " << list[rnum].genre << endl;
+cout << setw(20) << "RELEASE DATE: " << list[rnum].rdate << endl;
+cout << setw(20) << "DIRECTORY PATH: " << list[rnum].path << endl << endl;
+cout << "----------------------------------------------------------------------------------------\n";
+}
+}
+break;
+default:
+system("CLS");
+42
+cout << "Invalid choice inserted!\n\n";
+cin.ignore(200, '\n');
+}
+return;
+}

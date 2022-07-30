@@ -1,4 +1,4 @@
 
 MUSIC SYSTEM
 
-This is a project of my Programming and problem solving course at my university.
+This is my Programming and problem solving project in University.
